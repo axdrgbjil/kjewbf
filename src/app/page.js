@@ -1,101 +1,174 @@
-import Image from "next/image";
+'use client';
+import { useState } from 'react';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [preferences, setPreferences] = useState('');
+  const [sessionId, setSessionId] = useState('');
+  const [error, setError] = useState('');
+  const [flag, setFlag] = useState('');
+  const [status, setStatus] = useState('');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setSessionId(data.sessionId);
+        setStatus('Logged in successfully');
+        setError('');
+      } else {
+        setError(data.error);
+      }
+    } catch {
+      setError('Failed to login');
+    }
+  };
+
+  const updatePreferences = async () => {
+    try {
+      let prefsObj = {};
+      try {
+        prefsObj = JSON.parse(preferences);
+      } catch {
+        setError('Invalid JSON format');
+        return;
+      }
+
+      const res = await fetch('/api/preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Session-Id': sessionId,
+        },
+        body: JSON.stringify(prefsObj),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setStatus('Preferences updated');
+        setError('');
+      } else {
+        setError(data.error);
+      }
+    } catch {
+      setError('Failed to update preferences');
+    }
+  };
+
+  const getFlag = async () => {
+    try {
+      const res = await fetch('/api/flag', {
+        headers: {
+          'X-Session-Id': sessionId,
+        },
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setFlag(data.flag);
+        setError('');
+      } else {
+        setError(data.error);
+      }
+    } catch {
+      setError('Failed to get flag');
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-gray-900 text-gray-100 p-8">
+      <div className="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
+        <h1 className="text-3xl font-bold mb-6 text-center text-blue-400">
+          Prototype Pollution CTF
+        </h1>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-800 text-red-400 rounded">
+            {error}
+          </div>
+        )}
+
+        {status && !error && (
+          <div className="mb-4 p-3 bg-green-800 text-green-400 rounded">
+            {status}
+          </div>
+        )}
+
+        {!sessionId ? (
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-100"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-100"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-500"
+            >
+              Login
+            </button>
+          </form>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">User Preferences (JSON)</label>
+              <textarea
+                value={preferences}
+                onChange={(e) => setPreferences(e.target.value)}
+                className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-100 h-32 font-mono text-sm"
+                placeholder="Enter preferences in JSON format..."
+              />
+            </div>
+            <div className="space-x-2">
+              <button
+                onClick={updatePreferences}
+                className="py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-500"
+              >
+                Update Preferences
+              </button>
+              <button
+                onClick={getFlag}
+                className="py-2 px-4 bg-green-600 text-white rounded hover:bg-green-500"
+              >
+                Get Flag
+              </button>
+            </div>
+
+            {flag && (
+              <div className="mt-4 p-4 bg-black text-green-400 font-mono rounded">
+                {flag}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="mt-4 text-sm text-gray-400">
+          <p>Hint: Sometimes the properties you set might affect more than you think...</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </div>
+    </main>
   );
 }
