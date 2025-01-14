@@ -14,7 +14,7 @@ export async function GET(request) {
     }
   
     return new Response(JSON.stringify({ 
-      flag: 'CTF{Pr0t0typ3_P0llut10n_M4st3r}'
+      flag: 'flag{Pr0t0typ3_P0llut10n_M4st3r}'
     }));
   }
   
