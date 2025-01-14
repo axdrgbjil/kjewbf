@@ -86,9 +86,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-900 text-gray-100 p-8">
       <div className="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
-        <h1 className="text-3xl font-bold mb-6 text-center text-blue-400">
-          Prototype Pollution CTF
-        </h1>
+        
 
         {error && (
           <div className="mb-4 p-3 bg-red-800 text-red-400 rounded">
