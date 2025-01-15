@@ -132,12 +132,12 @@ export default function Home() {
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">User Preferences (JSON)</label>
+              <label className="block text-sm font-medium mb-1">User Preferences</label>
               <textarea
                 value={preferences}
                 onChange={(e) => setPreferences(e.target.value)}
                 className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-100 h-32 font-mono text-sm"
-                placeholder="Enter preferences in JSON format..."
+                placeholder="Enter preferences..."
               />
             </div>
             <div className="space-x-2">
